@@ -1,5 +1,6 @@
 from django import template
 from django.utils.safestring import mark_safe
+from mainapp.models import Smartphone
 
 register = template.Library()
 
@@ -47,8 +48,8 @@ PRODUCT_SPECIFICATIONS = {
         'Дисплей': 'display',
         'Роздільна здатність': 'resolution',
         'Оперативна пам\'ять': 'ram',
-        'Наявність SD-карти': 'sd_card',
         'Об\'єм акумулятора': 'accumulator_volume',
+        'Наявність SD-карти': 'sd_card',
         'Максимальний обсяг SD-карти': 'sd_card_volume',
         'Головна камера': 'main_camera_size',
         'Фронтальна камера': 'frontal_camera_size',
@@ -72,4 +73,7 @@ def get_product_specification(product, model_name):
 @register.filter
 def product_specification(product):
     model_name = product.__class__._meta.model_name
+    if isinstance(product, Smartphone):
+        if not product.sd_card:
+            PRODUCT_SPECIFICATIONS['smartphone'].pop('Максимальний обсяг SD-карти')
     return mark_safe(TABLE_HEAD + get_product_specification(product, model_name) + TABLE_FOOTER)

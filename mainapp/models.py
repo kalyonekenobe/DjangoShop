@@ -121,7 +121,7 @@ class Smartphone(Product):
     accumulator_volume = models.CharField(max_length=255, verbose_name="Об'єм батареї")
     ram = models.CharField(max_length=255, verbose_name="Оперативна пам'ять")
     sd_card = models.BooleanField(default=True)
-    sd_card_volume = models.CharField(max_length=255, verbose_name="Об'єм SD-картки")
+    sd_card_volume = models.CharField(max_length=255, null=True, blank=True, verbose_name="Об'єм SD-картки")
     main_camera_size = models.CharField(max_length=255, verbose_name="Розмір головної камери")
     frontal_camera_size = models.CharField(max_length=255, verbose_name="Розмір фронтальної камери")
 
@@ -130,3 +130,5 @@ class Smartphone(Product):
 
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
+    
+    

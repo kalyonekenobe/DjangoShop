@@ -1,0 +1,16 @@
+{% extends 'admin/change_form.html' %}
+{% load static %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script>
+    (function($) {
+        $('#id_sd_card').on('click', function(){
+            if(!$('#id_sd_card').prop('checked'))
+                $('#id_sd_card_volume').attr('disabled', true).val('').css('background', '#f8f9fa');
+            else
+                $('#id_sd_card_volume').attr('disabled', false).val('').removeAttr('style');
+        });
+    })(django.jQuery);
+</script>
+{% endblock %}
