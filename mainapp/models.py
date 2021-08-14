@@ -9,6 +9,7 @@ def get_product_url(obj, view_name):
     ct_model = obj.__class__._meta.model_name
     return reverse(view_name, kwargs={'ct_model': ct_model, 'slug': obj.slug})
 
+
 class LatestProductsManager:
 
     @staticmethod
@@ -62,12 +63,12 @@ class Product(models.Model):
 class CartProduct(models.Model):
 
     user = models.ForeignKey('Customer', verbose_name="Покупець", on_delete=models.CASCADE)
-    cart = models.ForeignKey('Cart', verbose_name="Кошик", on_delete=models.CASCADE, related_name="_cart")
+    cart = models.ForeignKey('Cart', verbose_name="Кошик", on_delete=models.CASCADE, related_name="related_cart")
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     quantity = models.PositiveIntegerField(default=1)
-    total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name="Загальна ціна")
+    total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name="Загальна ціна", default=0)
 
     def __str__(self):
         return "Товар: {}".format(self.content_object.title)
@@ -76,7 +77,7 @@ class CartProduct(models.Model):
 class Cart(models.Model):
 
     owner = models.ForeignKey('Customer', verbose_name="Власник", on_delete=models.CASCADE)
-    products = models.ManyToManyField(CartProduct, blank=True, related_name="_products")
+    products = models.ManyToManyField(CartProduct, blank=True, related_name="related_products")
     products_quantity = models.PositiveIntegerField(default=0, verbose_name="Кількість товарів")
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name="Загальна ціна")
     in_order = models.BooleanField(default=False)
