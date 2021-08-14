@@ -5,4 +5,5 @@ db.sqlite3
 /static
 /media
 /static_dev
+settings.py
 .DS_Store
