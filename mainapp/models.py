@@ -10,6 +10,10 @@ def get_product_url(obj, view_name):
     return reverse(view_name, kwargs={'ct_model': ct_model, 'slug': obj.slug})
 
 
+def count_models(*model_names):
+    return [models.Count(model_name) for model_name in model_names]
+
+
 class LatestProductsManager:
 
     @staticmethod
@@ -35,13 +39,37 @@ class LatestProducts:
     objects = LatestProductsManager()
 
 
+class CategoryManager(models.Manager):
+    
+    CATEGORY_NAME_COUNT_NAME = {
+        'Ноутбуки': 'notebook__count',
+        'Смартфони': 'smartphone__count',
+    }
+    
+    def get_queryset(self):
+        return super().get_queryset()
+    
+    def get_categories(self):
+        counted_models = count_models('notebook', 'smartphone')
+        queryset = self.get_queryset().annotate(*counted_models)
+        data = [
+            dict(name=category.name, url=category.get_absolute_url(), count=getattr(category, self.CATEGORY_NAME_COUNT_NAME[category.name]))
+            for category in queryset
+        ]
+        return data
+
+
 class Category(models.Model):
 
     name = models.CharField(max_length=255, verbose_name="Назва категорії")
     slug = models.SlugField(unique=True)
-
+    objects = CategoryManager()
+    
     def __str__(self):
         return self.name
+    
+    def get_absolute_url(self):
+        return reverse('category_detail', kwargs={'slug': self.slug})
 
 
 class Product(models.Model):
