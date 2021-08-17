@@ -4,16 +4,14 @@ from .models import Notebook, Smartphone, Category, Product
 from .mixins import CategoryDetailMixin
 
 
-# def test_view(request):
-#     categories_list = Category.objects.get_categories()
-#     return render(request, 'base.html', {'categories': categories_list})
-
-
 class BaseView(View):
     
     def get(self, request, *args, **kwargs):
         categories_list = Category.objects.get_categories()
-        return render(request, 'base.html', {'categories': categories_list})
+        products_quantity = 0
+        for category in categories_list:
+            products_quantity += category['count']
+        return render(request, 'base.html', {'categories_list': categories_list, 'products_quantity': products_quantity})
 
 
 class ProductDetailView(DetailView):
