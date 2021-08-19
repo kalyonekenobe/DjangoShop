@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="page-content d-flex flex-row justify-content-center px-5 w-100 mt-5">
+        <div class="d-flex flex-column w-100">
+            <h3 class="mb-5">Ваша корзина:</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Назва товару</th>
+                        <th scope="col">Зображення</th>
+                        <th scope="col">Ціна</th>
+                        <th scope="col">Кількість</th>
+                        <th scope="col">Загальна вартість</th>
+                        <th scope="col">Операції</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in cart.products.all %}
+                        <tr>
+                            <td>{{ product.content_object.title }}</td>
+                            <td><img style="object-fit: contain; width: 250px; height: 250px;" src="{{ product.content_object.image.url }}" alt=""></td>
+                            <td>{{ product.content_object.price }} грн</td>
+                            <td>{{ product.quantity }}</td>
+                            <td>{{ product.total_price }} грн</td>
+                            <td>@mdo</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock content %}
