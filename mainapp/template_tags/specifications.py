@@ -74,6 +74,6 @@ def get_product_specification(product, model_name):
 def product_specification(product):
     model_name = product.__class__._meta.model_name
     if isinstance(product, Smartphone):
-        if not product.sd_card:
+        if not product.sd_card and PRODUCT_SPECIFICATIONS['smartphone'].get('Максимальний обсяг SD-карти'):
             PRODUCT_SPECIFICATIONS['smartphone'].pop('Максимальний обсяг SD-карти')
     return mark_safe(TABLE_HEAD + get_product_specification(product, model_name) + TABLE_FOOTER)

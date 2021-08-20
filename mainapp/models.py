@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -7,11 +8,17 @@ from django.urls import reverse
 
 def get_product_url(obj, view_name):
     ct_model = obj.__class__._meta.model_name
-    if ct_model[-1] == 'y':
-        ct_model = ct_model[:-1] + 'ies'
-    else:
-        ct_model += 's'
+    ct_model = ct_model[:-1] + 'ies' if ct_model[-1] == 'y' else ct_model + 's'
     return reverse(view_name, kwargs={'ct_model': ct_model, 'slug': obj.slug})
+
+# Makes whitespaces after every 3 characters
+def modify_product_price_output(price):
+    price = str(price)[::-1]
+    price = [price[i:i + 3] for i in range(0, len(price), 3)]
+    price = ' '.join(price)
+    if price[3] == ' ':
+        price = price[0:3] + price[4:len(price)]
+    return price[::-1]
 
 
 def count_models(*model_names):
@@ -86,10 +93,13 @@ class Product(models.Model):
     category = models.ForeignKey(Category, verbose_name="Категорія", on_delete=models.CASCADE)
     image = models.ImageField(verbose_name="Зображення")
     description = models.TextField(null=True, verbose_name="Опис")
-    price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name="Ціна")
+    price = models.DecimalField(max_digits=18, decimal_places=2, verbose_name="Ціна")
 
     def __str__(self):
         return self.title
+    
+    def modify_price(self):
+        return modify_product_price_output(self.price)
 
 
 class CartProduct(models.Model):
@@ -100,14 +110,20 @@ class CartProduct(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     quantity = models.PositiveIntegerField(default=1)
-    total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name="Загальна ціна", default=0)
+    total_price = models.DecimalField(max_digits=18, decimal_places=2, verbose_name="Загальна ціна", default=0)
 
     def __str__(self):
         return "Товар: {}".format(self.content_object.title)
     
+    def modify_price(self):
+        return modify_product_price_output(self.total_price)
+    
     def save(self, *args, **kwargs):
-        self.total_price = self.quantity * self.content_object.price
+        self.total_price = int(self.quantity) * self.content_object.price
         super().save(*args, **kwargs)
+        
+    def get_model_name(self):
+        return self.content_object.__class__._meta.model_name
         
 
 class Cart(models.Model):
@@ -115,12 +131,31 @@ class Cart(models.Model):
     owner = models.ForeignKey('Customer', null=True, verbose_name="Власник", on_delete=models.CASCADE)
     products = models.ManyToManyField(CartProduct, blank=True, related_name="related_products")
     products_quantity = models.PositiveIntegerField(default=0, verbose_name="Кількість товарів")
-    total_price = models.DecimalField(max_digits=9, decimal_places=2, default=0, verbose_name="Загальна ціна")
+    total_price = models.DecimalField(max_digits=18, decimal_places=2, default=0, verbose_name="Загальна ціна")
     in_order = models.BooleanField(default=False)
     for_unregistered_user = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
+    
+    def save(self, *args, **kwargs):
+        cart_data = self.products.aggregate(models.Sum('total_price'), models.Sum('quantity'))
+        self.total_price = cart_data['total_price__sum'] if cart_data['total_price__sum'] else Decimal.from_float(0.00)
+        self.products_quantity = cart_data['quantity__sum'] if cart_data['quantity__sum'] else 0
+        self.total_price = format(self.total_price, '.2f')
+        super().save(*args, **kwargs)
+    
+    def modify_price(self):
+        return modify_product_price_output(self.total_price)
+    
+    def get_cart_message(self):
+        if self.products_quantity % 10 in range(2, 5) and self.products_quantity not in range(11, 20):
+            word = "товари"
+        elif self.products_quantity % 10 in range(5, 10) or self.products_quantity in range(11, 20) or self.products_quantity % 10 == 0:
+            word = "товарів"
+        else:
+            word = "товар"
+        return "Ви обрали {} {} на суму".format(self.products_quantity, word)
 
 
 class Customer(models.Model):

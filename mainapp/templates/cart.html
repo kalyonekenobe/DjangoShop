@@ -18,16 +18,50 @@
                 <tbody>
                     {% for product in cart.products.all %}
                         <tr>
-                            <td>{{ product.content_object.title }}</td>
+                            <td><a href="{{ product.content_object.get_absolute_url }}">{{ product.content_object.title }}</a></td>
                             <td><img style="object-fit: contain; width: 250px; height: 250px;" src="{{ product.content_object.image.url }}" alt=""></td>
-                            <td>{{ product.content_object.price }} грн</td>
-                            <td>{{ product.quantity }}</td>
-                            <td>{{ product.total_price }} грн</td>
-                            <td>@mdo</td>
+                            <td>{{ product.content_object.modify_price }} грн</td>
+                            <td>
+                                <div class="btn-group-vertical cart-product-counter" role="group" style="width: 40px !important">
+                                    <a class="btn btn-sm btn-primary py-2 plus" for="#product-{{ product.id }}">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </a>
+                                    <form class='cart-form' action="{% url 'change_product_quantity' ct_model=product.get_model_name slug=product.content_object.slug %}" method="POST" total-price-field="#{{ product.content_object.slug }}_total_price">
+                                        {% csrf_token %}
+                                        <input id="product-{{ product.id }}" type="number" min="0" max="999" name="quantity" value="{{ product.quantity }}" class="d-flex w-100 text-center">
+                                    </form>
+                                    <a class="btn btn-sm btn-primary py-2 minus" for="#product-{{ product.id }}">
+                                        <i class="bi bi-dash-lg"></i>
+                                    </a>
+                                </div>
+                            </td>
+                            <td><span id="{{ product.content_object.slug }}_total_price">{{ product.modify_price }}</span> грн</td>
+                            <td>
+                                <a class="btn btn-danger" href="{% url 'remove_from_cart' ct_model=product.get_model_name slug=product.content_object.slug %}">Видалити</a>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="d-flex flex-row justify-content-between align-items-center flex-wrap mt-3 mb-4">
+                <div class="d-flex align-items-center">
+                    <h4 id="cart-message">
+                        {{ cart.get_cart_message }}
+                    </h4>
+                    <span id='cart-total-price' class="badge bg-light bg-gradient mx-2">
+                        <h5 class="m-0 p-1 text-dark">
+                            {{ cart.modify_price }}
+                        </h5>
+                    </span>
+                    <h4>
+                        грн
+                    </h4>
+                </div>
+                <div>
+                    <a class="btn btn-success btn ms-3 {% if not cart.total_price %} disabled {% endif %}">Продовжити</a>
+                    <a class="btn btn-danger btn ms-3 {% if not cart.products_quantity %} disabled {% endif %}" href="{% url 'clear_cart' %}">Очистити корзину</a>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock content %}
