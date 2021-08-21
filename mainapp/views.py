@@ -1,9 +1,7 @@
 import json
+from django.contrib import messages
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
-from django.views.generic import DetailView, ListView, View
-from django.contrib.contenttypes.models import ContentType
-from .models import Notebook, Smartphone, Category, LatestProducts, Customer, Cart, CartProduct
 from .mixins import *
 
 
@@ -73,6 +71,9 @@ class AddToCartView(CartMixin, View):
                 cart_product.quantity += 1
                 cart_product.save()
             self.cart.save()
+            messages.add_message(request, messages.SUCCESS, "Товар успішно додано до корзини")
+        else:
+            messages.add_message(request, messages.ERROR, "При додаванні товару до корзини виникла помилка або його кількість не входить до проміжку від 1 до 999 одиниць")
         ct_model_path_name = ct_model[:-1] + 'ies' if ct_model[-1] == 'y' else ct_model + 's'
         redirect_path = f'/products/{ct_model_path_name}/{product_slug}'
         return HttpResponseRedirect(redirect_path)

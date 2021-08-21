@@ -23,13 +23,27 @@ $(document).ready(function(){
         }, 500);
     });
     $('.cart-form input[name="quantity"]').on('input', function(){
+        $(this).val(Math.min(999, Math.max(1, parseInt($(this).val()))));
         let inputValue = parseInt($(this).val());
-        clearTimeout(cartTimeout);
-        $('.cart-spinner').show();
-        $('.cart-buttons a').addClass('disabled');
-        cartTimeout = setTimeout(() => {
-            $(this).parent().submit();
-        }, 500);
+        if(inputValue){
+            clearTimeout(cartTimeout);
+            $('.cart-spinner').show();
+            $('.cart-buttons a').addClass('disabled');
+            cartTimeout = setTimeout(() => {
+                $(this).parent().submit();
+            }, 500);
+        }
+    });
+    $('.cart-form input[name="quantity"]').on('focusout', function(){
+        if(!$(this).val()){
+            $(this).val(1);
+            clearTimeout(cartTimeout);
+            $('.cart-spinner').show();
+            $('.cart-buttons a').addClass('disabled');
+            cartTimeout = setTimeout(() => {
+                $(this).parent().submit();
+            }, 500);
+        }
     });
     $('.cart-form').submit(function(e){
         let total_price_field = $(this).attr('total-price-field');

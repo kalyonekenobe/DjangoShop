@@ -60,7 +60,24 @@
                 </div>
                 <div class="cart-buttons">
                     <a class="btn btn-success btn ms-3 {% if not cart.total_price %} disabled {% endif %}">Продовжити</a>
-                    <a class="btn btn-danger btn ms-3 {% if not cart.products_quantity %} disabled {% endif %}" href="{% url 'clear_cart' %}">Очистити корзину</a>
+                    <a class="btn btn-danger btn ms-3 {% if not cart.products_quantity %} disabled {% endif %}" data-bs-toggle="modal" data-bs-target="#clear-cart-modal">Очистити корзину</a>
+                </div>
+                <div class="modal fade" id="clear-cart-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Очищення корзини</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Ви дійсно хочете очистити корзину?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a class="btn btn-secondary" data-bs-dismiss="modal">Закрити</a>
+                                <a class="btn btn-primary" href="{% url 'clear_cart' %}">Підтвердити</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

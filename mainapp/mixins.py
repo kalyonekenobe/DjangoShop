@@ -1,6 +1,6 @@
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic import View
-from .models import Category, Cart, Customer
+from django.views.generic import View, DetailView, ListView
+from .models import *
 
 
 class CartMixin(View):
@@ -22,6 +22,17 @@ class CartMixin(View):
 
 
 class CategoryDetailMixin(SingleObjectMixin, CartMixin):
+    
+    PRODUCTS_CLASS_BY_CATEGORY_SLUG = {
+        'notebooks': Notebook,
+        'smartphones': Smartphone,
+    }
+    
+    def get_products_by_category(self, context):
+        category_slug = context['category'].slug
+        products_class = self.PRODUCTS_CLASS_BY_CATEGORY_SLUG[category_slug]
+        products = products_class.objects.all()
+        return products
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -31,5 +42,6 @@ class CategoryDetailMixin(SingleObjectMixin, CartMixin):
             products_quantity += category['count']
         context['products_quantity'] = products_quantity
         context['cart'] = self.cart
+        context['products'] = self.get_products_by_category(context)
         return context
         
