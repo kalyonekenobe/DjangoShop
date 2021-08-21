@@ -1,15 +1,35 @@
 $(document).ready(function(){
+    let cartTimeout;
     $('.plus').on('click', function(){
         let inputName = $(this).attr('for');
         let inputValue = parseInt($(inputName).val());
         $(inputName).val(Math.min(inputValue + 1, 999));
-        $(this).parent().find('form').submit();
+        clearTimeout(cartTimeout);
+        $('.cart-spinner').show();
+        $('.cart-buttons a').addClass('disabled');
+        cartTimeout = setTimeout(() => {
+            $(this).parent().find('form').submit();
+        }, 500);
     });
     $('.minus').on('click', function(){
         let inputName = $(this).attr('for');
         let inputValue = parseInt($(inputName).val());
-        $(inputName).val(Math.max(inputValue - 1, 0));
-        $(this).parent().find('form').submit();
+        $(inputName).val(Math.max(inputValue - 1, 1));
+        clearTimeout(cartTimeout);
+        $('.cart-spinner').show();
+        $('.cart-buttons a').addClass('disabled');
+        cartTimeout = setTimeout(() => {
+            $(this).parent().find('form').submit();
+        }, 500);
+    });
+    $('.cart-form input[name="quantity"]').on('input', function(){
+        let inputValue = parseInt($(this).val());
+        clearTimeout(cartTimeout);
+        $('.cart-spinner').show();
+        $('.cart-buttons a').addClass('disabled');
+        cartTimeout = setTimeout(() => {
+            $(this).parent().submit();
+        }, 500);
     });
     $('.cart-form').submit(function(e){
         let total_price_field = $(this).attr('total-price-field');
@@ -29,6 +49,8 @@ $(document).ready(function(){
                 $("#cart-message").html(data['cart_message']);
                 $(".cart-badge").html(data['cart_products_quantity']);
                 $(total_price_field).html(data['product_total_price']);
+                $('.cart-spinner').hide();
+                $('.cart-buttons a').removeClass('disabled');
             }
         })
     });
