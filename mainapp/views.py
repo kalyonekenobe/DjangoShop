@@ -18,6 +18,7 @@ class BaseView(CartMixin, View):
             'products_quantity': products_quantity,
             'products': products,
             'cart': self.cart,
+            'user': request.user,
         }
         return render(request, 'base.html', context)
 
@@ -42,6 +43,7 @@ class ProductDetailView(CartMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['ct_model'] = self.model._meta.model_name
         context['cart'] = self.cart
+        context['user'] = self.request.user
         return context
     
 
@@ -56,8 +58,8 @@ class CategoryDetailView(CategoryDetailMixin, DetailView):
     
 class AddToCartView(CartMixin, View):
 
-    def get(self, request, *args, **kwargs):
-        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+    def post(self, request, *args, **kwargs):
+        ct_model, product_slug, data = kwargs.get('ct_model'), kwargs.get('slug'), True
         customer = Customer.objects.get(user=request.user)
         content_type = ContentType.objects.get(model=ct_model)
         product = content_type.model_class().objects.get(slug=product_slug)
@@ -71,12 +73,9 @@ class AddToCartView(CartMixin, View):
                 cart_product.quantity += 1
                 cart_product.save()
             self.cart.save()
-            messages.add_message(request, messages.SUCCESS, "Товар успішно додано до корзини")
         else:
-            messages.add_message(request, messages.ERROR, "При додаванні товару до корзини виникла помилка або його кількість не входить до проміжку від 1 до 999 одиниць")
-        ct_model_path_name = ct_model[:-1] + 'ies' if ct_model[-1] == 'y' else ct_model + 's'
-        redirect_path = f'/products/{ct_model_path_name}/{product_slug}'
-        return HttpResponseRedirect(redirect_path)
+            data = False
+        return HttpResponse(data)
 
 
 class DeleteFromCartView(CartMixin, View):

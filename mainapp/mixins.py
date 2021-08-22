@@ -43,5 +43,6 @@ class CategoryDetailMixin(SingleObjectMixin, CartMixin):
         context['products_quantity'] = products_quantity
         context['cart'] = self.cart
         context['products'] = self.get_products_by_category(context)
+        context['user'] = self.request.user
         return context
         

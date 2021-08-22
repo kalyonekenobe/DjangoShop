@@ -1,4 +1,8 @@
 $(document).ready(function(){
+    let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
     let cartTimeout;
     $('.plus').on('click', function(){
         let inputName = $(this).attr('for');
@@ -67,5 +71,38 @@ $(document).ready(function(){
                 $('.cart-buttons a').removeClass('disabled');
             }
         })
+    });
+    $(".add-to-cart").on('click', function(){
+        $(this).addClass('disabled');
+        let link = $(this);
+        let action = $(this).attr('action');
+        $.ajax({
+            type: 'POST',
+            url: action,
+            data: {
+                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]', this).val(),
+            },
+            success: function(data){
+                if(data == 'True'){
+                    if(link.hasClass('btn-success')){
+                        link.html("<i class='bi bi-cart-check me-1'></i> Товар у корзині");
+                        link.attr('class', 'btn btn-outline-success add-to-cart');
+                    }else{
+                        link.html("<i class='bi bi-cart-check'></i>");
+                        link.attr('class', 'btn btn-success add-to-cart');
+                        link.attr('data-bs-toggle', "tooltip");
+                        link.attr('data-bs-placement', "top");
+                        link.attr('title', "Товар вже додано до корзини");
+                    }
+                    link.attr('action', '');
+                    link.attr('href', '/cart/');
+                    tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                    tooltipTriggerList.map(function (tooltipTriggerEl) {
+                      return new bootstrap.Tooltip(tooltipTriggerEl)
+                    });
+                }
+                link.removeClass('disabled');
+            }
+        });
     });
 });

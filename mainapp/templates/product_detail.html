@@ -1,25 +1,26 @@
 {% extends 'base.html' %}
 {% load specifications %}
+{% load product_params %}
 
 {% block content %}
-<div class="row">
-    {% if messages %}
-        <div class="col-12 px-5">
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags != 'error' %}{{ message.tags }}{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+<div class="row mt-5">
     <div class="col-md-4 px-5 mb-5">
         <img src="{{ product.image.url }}" width="100%">
     </div>
     <div class="col-md-8 px-5">
         <h1 class="display-6">{{ product.title }}</h1>
         <h2 class="mt-2 mb-4 text-muted">Ціна: {{ product.modify_price }} грн.</h2>
-        <a href="{% url 'add_to_cart' ct_model=ct_model slug=product.slug %}"><button class="btn-success btn">Додати до кошику</button></a>
+        {% if not product|check_product_in_cart:user %}
+            <a action="{% url 'add_to_cart' ct_model=ct_model slug=product.slug %}" class="add-to-cart btn btn-success">
+                {% csrf_token %}
+                Додати до корзини
+            </a>
+        {% else %}
+            <a href="/cart/" class="add-to-cart btn btn-outline-success">
+                <i class="bi bi-cart-check me-1"></i>
+                Товар у корзині
+            </a>
+        {% endif %}
         <div class="my-5">
             <h5>Опис: </h5>
             <p>{{ product.description }}</p>

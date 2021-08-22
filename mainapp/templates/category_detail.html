@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load product_params %}
 
 {% block content %}
 {% include 'left_sidebar.html' %}
@@ -35,6 +35,16 @@
                             </div>
                             <div class="text-center mt-4">
                                 <a class="btn btn-outline-dark mt-auto" href="{{ product.get_absolute_url }}">View options</a>
+                                {% if not product|check_product_in_cart:user %}
+                                    <a class="btn btn-outline-dark add-to-cart" action="{% url 'add_to_cart' ct_model=product.get_model_name slug=product.slug %}">
+                                        {% csrf_token %}
+                                        <i class="bi bi-cart-plus-fill"></i>
+                                    </a>
+                                {% else %}
+                                    <a class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Товар вже додано до корзини" href="{% url 'cart' %}">
+                                        <i class="bi bi-cart-check"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.urls import reverse
+from django.utils import timezone
 
 
 def get_product_url(obj, view_name):
@@ -100,6 +101,9 @@ class Product(models.Model):
     
     def modify_price(self):
         return modify_product_price_output(self.price)
+    
+    def get_model_name(self):
+        return self.__class__._meta.model_name
 
 
 class CartProduct(models.Model):
@@ -163,6 +167,7 @@ class Customer(models.Model):
     user = models.ForeignKey(User, verbose_name="Користувач", on_delete=models.CASCADE)
     phone = models.CharField(max_length=20, verbose_name="Телефон", null=True)
     address = models.CharField(max_length=255, verbose_name="Адреса", null=True)
+    orders = models.ManyToManyField('Order', verbose_name='Замовлення користувача', related_name='related_orders')
 
     def __str__(self):
         return "Покупець: {} {}".format(self.user.first_name, self.user.last_name)
@@ -202,4 +207,42 @@ class Smartphone(Product):
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
     
+    
+class Order(models.Model):
+    
+    STATUS_NEW = 'new'
+    STATUS_IN_PROGRESS = 'in_progress'
+    STATUS_IS_READY = 'is_ready'
+    STATUS_IS_COMPLETED = 'completed'
+    
+    ORDER_TYPE_SELF = 'self-pickup'
+    ORDER_TYPE_DELIVERY = 'delivery'
+    
+    STATUS_CHOICES = (
+        (STATUS_NEW, 'Нове замовлення'),
+        (STATUS_IN_PROGRESS, 'В процесі обробки'),
+        (STATUS_IS_READY, 'Готовий до відправлення'),
+        (STATUS_IS_COMPLETED, 'Замовлення виконане'),
+    )
+    
+    ORDER_TYPE_CHOICES = (
+        (ORDER_TYPE_SELF, 'Самовивіз'),
+        (ORDER_TYPE_DELIVERY, 'Доставка'),
+    )
+
+    customer = models.ForeignKey('Customer', verbose_name="Замовник", related_name='related_customer', on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=255, verbose_name="Ім'я")
+    last_name = models.CharField(max_length=255, verbose_name="Прізвище")
+    middle_name = models.CharField(max_length=255, verbose_name="По-батькові", blank=True, null=True)
+    phone = models.CharField(max_length=20, verbose_name="Телефон")
+    address = models.CharField(max_length=1024, verbose_name="Адреса", blank=True, null=True)
+    email = models.CharField(max_length=255, verbose_name="E-mail", blank=True, null=True)
+    status = models.CharField(max_length=100, verbose_name='Стан замовлення', choices=STATUS_CHOICES, default=STATUS_NEW)
+    order_type = models.CharField(max_length=100, verbose_name='Тип замовлення', choices=ORDER_TYPE_CHOICES, default=ORDER_TYPE_DELIVERY)
+    comment = models.TextField(blank=True, null=True, verbose_name='Коментар до замовлення')
+    order_datetime = models.DateTimeField(auto_now=True, verbose_name='Дата створення')
+    order_date = models.DateField(verbose_name='Дата отримання замовлення', default=timezone.now)
+    
+    def __str__(self):
+        return str(self.id)
     

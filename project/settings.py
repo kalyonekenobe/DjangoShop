@@ -68,6 +68,7 @@ TEMPLATES = [
             ],
             'libraries': {
                 'specifications': 'mainapp.template_tags.specifications',
+                'product_params': 'mainapp.template_tags.product_params',
             },
         },
     },
