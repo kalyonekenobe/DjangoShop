@@ -59,7 +59,7 @@
                     </h5>
                 </div>
                 <div class="cart-buttons">
-                    <a class="btn btn-success btn ms-3 {% if not cart.total_price %} disabled {% endif %}">Продовжити</a>
+                    <a class="btn btn-success btn ms-3 {% if not cart.total_price %} disabled {% endif %}" href="{% url 'order' cart_id=cart.id %}">Продовжити</a>
                     <a class="btn btn-danger btn ms-3 {% if not cart.products_quantity %} disabled {% endif %}" data-bs-toggle="modal" data-bs-target="#clear-cart-modal">Очистити корзину</a>
                 </div>
                 <div class="modal fade" id="clear-cart-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">

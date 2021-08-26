@@ -1,8 +1,11 @@
 import json
+from django.db import transaction
 from django.contrib import messages
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
+from .forms import *
 from .mixins import *
+from .utils import *
 
 
 class BaseView(CartMixin, View):
@@ -72,7 +75,7 @@ class AddToCartView(CartMixin, View):
             else:
                 cart_product.quantity += 1
                 cart_product.save()
-            self.cart.save()
+            recalculate_cart(self.cart)
         else:
             data = False
         return HttpResponse(data)
@@ -90,7 +93,7 @@ class DeleteFromCartView(CartMixin, View):
         if cart_product:
             self.cart.products.remove(cart_product)
             cart_product.delete()
-        self.cart.save()
+        recalculate_cart(self.cart)
         return HttpResponseRedirect('/cart/')
     
 
@@ -100,7 +103,7 @@ class ClearCart(CartMixin, View):
         self.cart.products.clear()
         CartProduct.objects.filter(cart=self.cart).delete()
         self.cart.products_quantity = 0
-        self.cart.save()
+        recalculate_cart(self.cart)
         return HttpResponseRedirect('/cart/')
     
 
@@ -116,7 +119,7 @@ class ChangeProductQuantityView(CartMixin, View):
         cart_product.quantity = request.POST['quantity']
         cart_product.total_price = int(request.POST['quantity']) * product.price
         cart_product.save()
-        self.cart.save()
+        recalculate_cart(self.cart)
         data = {
             'cart_total_price': str(self.cart.modify_price()),
             'product_total_price': str(cart_product.modify_price()),
@@ -135,4 +138,56 @@ class CartView(CartMixin, View):
             'categories_list': categories,
         }
         return render(request, 'cart.html', context)
+
+
+class OrderView(CartMixin, View):
+    
+    def get(self, request, *args, **kwargs):
+        context = {
+            'cart': self.cart,
+            'form': OrderForm(None),
+        }
+        return render(request, 'order.html', context)
+    
+
+class CreateOrderView(CartMixin, View):
+    
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        form = OrderForm(request.POST or None)
+        customer = Customer.objects.get(user=request.user)
+        if form.is_valid():
+            new_order = form.save(commit=False)
+            new_order.customer = customer
+            new_order.first_name = form.cleaned_data['first_name']
+            new_order.last_name = form.cleaned_data['last_name']
+            new_order.middle_name = form.cleaned_data['middle_name']
+            new_order.phone = form.cleaned_data['phone']
+            new_order.address = form.cleaned_data['address']
+            new_order.email = form.cleaned_data['email']
+            new_order.order_type = form.cleaned_data['order_type']
+            new_order.comment = form.cleaned_data['comment']
+            new_order.order_date = form.cleaned_data['order_date']
+            self.cart.in_order = True
+            recalculate_cart(self.cart)
+            new_order.cart = self.cart
+            new_order.save()
+            customer.orders.add(new_order)
+            customer.save()
+            messages.add_message(request, messages.INFO, 'Дякуємо за замовлення!')
+        context = {
+            'order_id': new_order.id,
+            'cart': new_order.cart,
+        }
+        return redirect('order_detail', order_id=new_order.id)
+    
+
+class OrderDetailView(CartMixin, DetailView):
+    
+    model = Order
+    context_object_name = 'order'
+    template_name = 'order_detail.html'
+    queryset = Order.objects.all()
+    pk_url_kwarg = 'order_id'
+    
     

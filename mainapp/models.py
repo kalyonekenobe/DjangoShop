@@ -142,13 +142,6 @@ class Cart(models.Model):
     def __str__(self):
         return str(self.id)
     
-    def save(self, *args, **kwargs):
-        cart_data = self.products.aggregate(models.Sum('total_price'), models.Sum('quantity'))
-        self.total_price = cart_data['total_price__sum'] if cart_data['total_price__sum'] else Decimal.from_float(0.00)
-        self.products_quantity = cart_data['quantity__sum'] if cart_data['quantity__sum'] else 0
-        self.total_price = format(self.total_price, '.2f')
-        super().save(*args, **kwargs)
-    
     def modify_price(self):
         return modify_product_price_output(self.total_price)
     
@@ -231,6 +224,7 @@ class Order(models.Model):
     )
 
     customer = models.ForeignKey('Customer', verbose_name="Замовник", related_name='related_customer', on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, verbose_name='Кошик', on_delete=models.CASCADE, null=True, blank=True)
     first_name = models.CharField(max_length=255, verbose_name="Ім'я")
     last_name = models.CharField(max_length=255, verbose_name="Прізвище")
     middle_name = models.CharField(max_length=255, verbose_name="По-батькові", blank=True, null=True)

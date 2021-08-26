@@ -63,5 +63,7 @@
                 {% if product.category %}<li class="breadcrumb-item"><a href="/products/{{ product.category.slug }}">{{ product.category.name }}</a></li>{% endif %}
                 {% if product %}<li class="breadcrumb-item active" aria-current="page">{{ product.title }}</li>{% endif %}
                 {% if 'cart' in request.path %}<li class="breadcrumb-item active" aria-current="page">Корзина</li>{% endif %}
+                {% if 'order' in request.path and 'order-detail' not in request.path %}<li class="breadcrumb-item active" aria-current="page">Створити замовлення</li>{% endif %}
+                {% if 'order-detail' in request.path %}<li class="breadcrumb-item active" aria-current="page">Замовлення #{{ order.id }}</li>{% endif %}
             </ol>
         </nav>

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="page-content d-flex flex-row justify-content-center px-5 w-100 mt-5">
+        <div class="container">
+            <h3 class="mb-5">Форма замовлення:</h3>
+            <form id="order-form" action="{% url 'create_order' cart_id=cart.id %}" method="POST">
+                {% csrf_token %}
+                <label for="basic-url" class="form-label">Особисті дані</label>
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3 p-1">
+                        <div class="input-group">
+                            <label class="input-group-text" id="basic-addon-last-name">Прізвище</label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 p-1">
+                        <div class="input-group">
+                            <label class="input-group-text" id="basic-addon-first-name">Ім'я</label>
+                            {{ form.first_name }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 p-1">
+                        <div class="input-group">
+                            <label class="input-group-text" id="basic-addon-middle-name">По-батькові</label>
+                            {{ form.middle_name }}
+                        </div>
+                    </div>
+                </div>
+                <label for="basic-url" class="form-label">Контактні дані</label>
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3 p-1">
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon-phone"><i class="bi bi-phone"></i></span>
+                            {{ form.phone }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 p-1">
+                        <div class="input-group">
+                            <span class="input-group-text ms-1" id="basic-addon-address"><i class="bi bi-house"></i></span>
+                            {{ form.address }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 p-1">
+                        <div class="input-group">
+                            <span class="input-group-text ms-1" id="basic-addon-email"><i class="bi bi-envelope"></i></span>
+                            {{ form.email }}
+                        </div>
+                    </div>
+                </div>
+                <label for="basic-url" class="form-label">Додаткова інформація</label>
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3 p-1">
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="id_order_type">Тип замовлення</label>
+                            {{ form.order_type }}
+                        </div>
+                        <div class="input-group">
+                            <label class="input-group-text" for="order-date">Дата отримання</label>
+                            {{ form.order_date }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8 mb-3 p-1">
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon-comment"><i class="bi bi-pencil-square"></i></span>
+                            {{ form.comment }}
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group d-flex justify-content-center row">
+                    <input type='submit' class="btn btn-primary mb-3 w-100" style="max-width: 400px;" value="Створити замовлення">
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
